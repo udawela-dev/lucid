@@ -433,6 +433,19 @@ class Handler(BaseHTTPRequestHandler):
         conn.commit()
         conn.close()
 
+        # welcome email to the new account owner
+        _send_email(
+            "Welcome to Lucid — your account is ready",
+            f"Hi {name}!\n\n"
+            f"Your Lucid account is ready. You can sign in any time to see the "
+            f"people who joined the waitlist.\n\n"
+            f"Lucid finds links you saved but lost — across bookmarks, "
+            f"screenshots, and messages — from one calm search box.\n\n"
+            f"Thanks for being part of it!\n"
+            f"— The Lucid team",
+            [email],
+        )
+
         self.send_response(200)
         self.send_header("Content-Type", "application/json")
         self.send_header("Content-Length", str(len(json.dumps({"status": "success", "message": "Account created"}))))
