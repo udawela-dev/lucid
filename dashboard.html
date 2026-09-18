@@ -1,0 +1,172 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Lucid — Founder Dashboard</title>
+  <meta name="description" content="Private founder dashboard: see everyone who joined the Lucid waitlist." />
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+
+  <header class="navbar" id="navbar">
+    <a href="/" class="navbar-brand" aria-label="Lucid home">
+      <span>Lucid</span>
+    </a>
+    <nav class="navbar-links" aria-label="Main navigation">
+      <a href="/">Home</a>
+      <a href="/signin">Sign in</a>
+    </nav>
+    <button class="btn btn-primary" onclick="signOut()">Sign out</button>
+  </header>
+
+  <main style="max-width: 72rem; margin: 4rem auto; padding: 0 1rem;">
+
+    <h1 style="font-size: clamp(2rem, 5vw, 2.75rem); margin-bottom: 0.5rem;">Watch area</h1>
+    <p style="color: var(--color-text-muted); margin-bottom: 2rem;">
+      Everyone who joined the waitlist — name, email, and when they signed up.
+    </p>
+
+    <!-- error / loading message -->
+    <p id="status-msg" style="color: var(--color-primary); font-weight: 500; min-height: 1.5em;"></p>
+
+    <!-- table of signups -->
+    <div style="background: var(--color-surface); border: 1px solid var(--color-border); border-radius: var(--radius-lg); padding: var(--space-5); box-shadow: var(--shadow-sm); overflow-x: auto;">
+      <table class="watch-table">
+        <thead>
+          <tr>
+            <th>Name</th>
+            <th>Email</th>
+            <th>Joined</th>
+          </tr>
+        </thead>
+        <tbody id="watch-rows">
+          <tr><td colspan="3" style="color: var(--color-text-muted);">Loading…</td></tr>
+        </tbody>
+      </table>
+      <p style="margin-top: var(--space-4); color: var(--color-text-muted); font-size: 0.875rem;">
+        <strong id="count">0</strong> people on the list
+      </p>
+    </div>
+
+    <!-- actions -->
+    <div style="margin-top: var(--space-5); display: flex; flex-wrap: wrap; gap: var(--space-3);">
+      <button class="btn" onclick="refreshList()" style="background: var(--color-surface); color: var(--color-secondary); border: 1px solid var(--color-border);">
+        Refresh
+      </button>
+      <button class="btn btn-primary" onclick="toggleEmailBox()">Send update email to everyone</button>
+    </div>
+
+    <!-- email-everyone box (hidden until clicked) -->
+    <div id="email-box" hidden style="margin-top: var(--space-5); background: var(--color-surface); border: 1px solid var(--color-border); border-radius: var(--radius-lg); padding: var(--space-5); box-shadow: var(--shadow-sm); max-width: 42rem;">
+      <h2 style="font-family: var(--font-heading); font-size: 1.25rem; margin-bottom: var(--space-3);">Send an update email</h2>
+      <label style="display:block; margin-bottom: var(--space-2); color: var(--color-secondary); font-size:0.9375rem;" for="email-subject">Subject</label>
+      <input class="input" id="email-subject" type="text" value="Lucid update" style="margin-bottom: var(--space-4);" />
+      <label style="display:block; margin-bottom: var(--space-2); color: var(--color-secondary); font-size:0.9375rem;" for="email-message">Message</label>
+      <textarea class="input" id="email-message" rows="4" style="margin-bottom: var(--space-4); width:100%;">Hi, thanks for joining the Lucid waitlist! Lucid is coming soon — we'll be in touch with news.</textarea>
+      <button class="btn btn-primary" onclick="sendUpdateEmail()">Send to everyone</button>
+      <span id="email-status" style="display:block; margin-top: var(--space-3); color: var(--color-primary); font-size: 0.9375rem;"></span>
+    </div>
+
+  </main>
+
+  <footer class="footer" style="margin-top:3rem;">
+    <p class="footer-copy">&copy; 2026 <strong>Lucid</strong>. All rights reserved.</p>
+  </footer>
+
+  <script>
+    // GET /api/waitlist returns 401 when there is no valid session —
+    // the server then shows the sign-in page to strangers anyway.
+    function refreshList() {
+      var statusEl = document.getElementById('status-msg');
+      statusEl.textContent = 'Refreshing…';
+      fetch("/api/waitlist", { method: "GET" })
+        .then(function(resp) {
+          if (resp.status === 401) {
+            window.location.href = "/signin";
+            throw new Error("redirecting to sign in");
+          }
+          if (!resp.ok) {
+            throw new Error("Server error");
+          }
+          return resp.json();
+        })
+        .then(function(data) {
+          var tbody = document.getElementById('watch-rows');
+          var countEl = document.getElementById('count');
+          var signups = data.signups || [];
+          countEl.textContent = signups.length;
+
+          if (signups.length === 0) {
+            tbody.innerHTML = '<tr><td colspan="3" style="color: var(--color-text-muted);">No one has joined yet. Share the site!</td></tr>';
+          } else {
+            tbody.innerHTML = signups.map(function(s) {
+              // simple escaping so user names/emails can't break the table
+              var name = String(s.name || "—").replace(/[<>&"]/g, function(c) {
+                return { "<": "&lt;", ">": "&gt;", "&": "&amp;", '"': "&quot;" }[c];
+              });
+              var em = String(s.email || "").replace(/[<>&"]/g, function(c) {
+                return { "<": "&lt;", ">": "&gt;", "&": "&amp;", '"': "&quot;" }[c];
+              });
+              var when = s.created_at ? new Date(s.created_at).toLocaleString() : "—";
+              return '<tr><td>' + name + '</td><td>' + em + '</td><td>' + when + '</td></tr>';
+            }).join("");
+          }
+          statusEl.textContent = "";
+        })
+        .catch(function(err) {
+          if (err.message !== "redirecting to sign in") {
+            statusEl.textContent = "Could not load the list. Please try again.";
+            console.error("dashboard error:", err);
+          }
+        });
+    }
+
+    function toggleEmailBox() {
+      var box = document.getElementById('email-box');
+      box.hidden = !box.hidden;
+    }
+
+    function sendUpdateEmail() {
+      var subject = document.getElementById('email-subject').value.trim();
+      var message = document.getElementById('email-message').value.trim();
+      var statusEl = document.getElementById('email-status');
+      statusEl.textContent = "Sending…";
+
+      fetch("/api/waitlist/email", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ subject: subject, message: message })
+      })
+      .then(function(resp) {
+        if (resp.status === 401) {
+          window.location.href = "/signin";
+          throw new Error("redirecting to sign in");
+        }
+        return resp.json().then(function(data) {
+          if (!resp.ok) throw new Error(data.message || "Server error");
+          return data;
+        });
+      })
+      .then(function(data) {
+        statusEl.textContent = data.message;
+      })
+      .catch(function(err) {
+        if (err.message !== "redirecting to sign in") {
+          statusEl.textContent = err.message || "Something went wrong.";
+          console.error("email error:", err);
+        }
+      });
+    }
+
+    function signOut() {
+      fetch("/api/logout", { method: "POST" })
+        .then(function() { window.location.href = "/signin"; })
+        .catch(function() { window.location.href = "/signin"; });
+    }
+
+    // load the list as soon as the page opens
+    refreshList();
+  </script>
+</body>
+</html>

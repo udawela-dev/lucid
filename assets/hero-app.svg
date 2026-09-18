@@ -1,0 +1,92 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 720 620" role="img" aria-labelledby="title desc">
+  <title id="title">Lucid app preview</title>
+  <desc id="desc">A browser window showing the Lucid search app. One search box finds "Python async tutorial" and returns results from Bookmarks, Screenshots, and Messages.</desc>
+
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#BFDBFE"/>
+      <stop offset="1" stop-color="#EFF6FF"/>
+    </linearGradient>
+    <linearGradient id="primary" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#60A5FA"/>
+      <stop offset="1" stop-color="#3B82F6"/>
+    </linearGradient>
+    <filter id="soft" x="-20%" y="-20%" width="140%" height="140%">
+      <feDropShadow dx="0" dy="14" stdDeviation="18" flood-color="#1E293B" flood-opacity="0.12"/>
+    </filter>
+    <filter id="card" x="-10%" y="-10%" width="120%" height="120%">
+      <feDropShadow dx="0" dy="3" stdDeviation="6" flood-color="#1E293B" flood-opacity="0.08"/>
+    </filter>
+  </defs>
+
+  <!-- soft backdrop -->
+  <rect width="720" height="620" rx="28" fill="url(#bg)"/>
+
+  <!-- browser window -->
+  <g filter="url(#soft)">
+    <rect x="70" y="60" width="580" height="500" rx="16" fill="#FFFFFF" stroke="#CBD5E1" stroke-width="1.5"/>
+  </g>
+
+  <!-- title bar -->
+  <rect x="70" y="60" width="580" height="46" rx="16" fill="#F8FAFC"/>
+  <rect x="70" y="92" width="580" height="14" fill="#F8FAFC"/>
+  <circle cx="100" cy="83" r="6" fill="#CBD5E1"/>
+  <circle cx="118" cy="83" r="6" fill="#BFDBFE"/>
+  <circle cx="136" cy="83" r="6" fill="#60A5FA"/>
+
+  <!-- address bar -->
+  <rect x="168" y="70" width="430" height="26" rx="13" fill="#FFFFFF" stroke="#E2E8F0"/>
+  <circle cx="178" cy="83" r="1" fill="#94A3B8"/>
+  <circle cx="182" cy="83" r="4" fill="none" stroke="#94A3B8" stroke-width="1.4"/>
+  <line x1="185" y1="86" x2="189" y2="90" stroke="#94A3B8" stroke-width="1.4" stroke-linecap="round"/>
+  <text x="200" y="87" font-family="system-ui, sans-serif" font-size="13" fill="#64748B">lucid.app — find a link you saved but lost</text>
+
+  <!-- search input -->
+  <rect x="100" y="132" width="520" height="60" rx="12" fill="#F8FAFC" stroke="#CBD5E1" stroke-width="1.5" filter="url(#card)"/>
+  <circle cx="128" cy="162" r="11" fill="none" stroke="#60A5FA" stroke-width="2.5"/>
+  <line x1="137" y1="171" x2="146" y2="180" stroke="#60A5FA" stroke-width="2.5" stroke-linecap="round"/>
+  <text x="165" y="167" font-family="system-ui, sans-serif" font-size="17" fill="#1E293B" font-weight="600">Python async tutorial</text>
+
+  <!-- results header -->
+  <text x="100" y="228" font-family="system-ui, sans-serif" font-size="12" fill="#64748B" letter-spacing="1">RESULTS · 3 FOUND</text>
+
+  <!-- result card 1: bookmark -->
+  <g filter="url(#card)">
+    <rect x="100" y="246" width="520" height="78" rx="12" fill="#FFFFFF" stroke="#60A5FA" stroke-width="2"/>
+    <rect x="112" y="258" width="26" height="26" rx="8" fill="#EFF6FF"/>
+    <path d="M118 266h14v12l-7-4-7 4z" fill="none" stroke="#60A5FA" stroke-width="1.8" stroke-linejoin="round"/>
+    <rect x="148" y="258" width="64" height="18" rx="9" fill="#BFDBFE"/>
+    <text x="164" y="270" font-family="system-ui, sans-serif" font-size="10" fill="#1E293B" text-anchor="middle" font-weight="600">BOOKMARK</text>
+    <text x="112" y="298" font-family="system-ui, sans-serif" font-size="14.5" fill="#1E293B" font-weight="600">Async/Await in Python — a real tutorial</text>
+    <text x="112" y="314" font-family="system-ui, sans-serif" font-size="12" fill="#64748B">Saved March 2026</text>
+    <rect x="556" y="268" width="52" height="24" rx="12" fill="url(#primary)"/>
+    <text x="582" y="284" font-family="system-ui, sans-serif" font-size="11" fill="#FFFFFF" text-anchor="middle" font-weight="600">Open link</text>
+  </g>
+
+  <!-- result card 2: screenshot -->
+  <g filter="url(#card)">
+    <rect x="100" y="338" width="520" height="78" rx="12" fill="#FFFFFF" stroke="#E2E8F0" stroke-width="1.5"/>
+    <rect x="112" y="350" width="26" height="26" rx="8" fill="#F8FAFC"/>
+    <rect x="116" y="354" width="18" height="14" rx="3" fill="none" stroke="#94A3B8" stroke-width="1.6"/>
+    <circle cx="128" cy="362" r="3.5" fill="#94A3B8"/>
+    <rect x="148" y="350" width="84" height="18" rx="9" fill="#F1F5F9"/>
+    <text x="190" y="362" font-family="system-ui, sans-serif" font-size="10" fill="#64748B" text-anchor="middle" font-weight="600">SCREENSHOT</text>
+    <text x="112" y="390" font-family="system-ui, sans-serif" font-size="14.5" fill="#1E293B" font-weight="600">Python async tutorial — notes screenshot</text>
+    <text x="112" y="406" font-family="system-ui, sans-serif" font-size="12" fill="#64748B">Saved February 2026</text>
+  </g>
+
+  <!-- result card 3: message -->
+  <g filter="url(#card)">
+    <rect x="100" y="430" width="520" height="78" rx="12" fill="#FFFFFF" stroke="#E2E8F0" stroke-width="1.5"/>
+    <rect x="112" y="442" width="26" height="26" rx="8" fill="#F8FAFC"/>
+    <path d="M118 446h14a2 2 0 0 1 2 2v8l-5-3h-11a2 2 0 0 1-2-2v-3a2 2 0 0 1 2-2z" fill="none" stroke="#94A3B8" stroke-width="1.6"/>
+    <rect x="148" y="442" width="70" height="18" rx="9" fill="#F1F5F9"/>
+    <text x="183" y="454" font-family="system-ui, sans-serif" font-size="10" fill="#64748B" text-anchor="middle" font-weight="600">MESSAGE</text>
+    <text x="112" y="482" font-family="system-ui, sans-serif" font-size="14.5" fill="#1E293B" font-weight="600">Async Python video — shared to myself</text>
+    <text x="112" y="498" font-family="system-ui, sans-serif" font-size="12" fill="#64748B">Saved January 2026</text>
+  </g>
+
+  <!-- footer strip -->
+  <rect x="100" y="526" width="520" height="22" rx="11" fill="#F8FAFC"/>
+  <text x="360" y="541" font-family="system-ui, sans-serif" font-size="11" fill="#64748B" text-anchor="middle">One search. Every place you save.</text>
+</svg>

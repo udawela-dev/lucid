@@ -1,0 +1,12 @@
+# Secrets — never commit the email app password!
+email_config.py
+
+# Local database with user emails
+waitlist.db
+
+# Python cache
+__pycache__/
+*.pyc
+
+# OS noise
+.DS_Store

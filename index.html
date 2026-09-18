@@ -1,0 +1,507 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Lucid — Find anything you've ever saved</title>
+  <meta name="description"
+        content="Lucid is a privacy-first tool that finds links you saved but lost — across bookmarks, screenshots, and messages. Your data stays on your device." />
+
+  <!-- Favicon -->
+  <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><defs><linearGradient id='g' x1='0' y1='0' x2='32' y2='32'><stop offset='0%25' stop-color='%2360A5FA'/><stop offset='100%25' stop-color='%23BFDBFE'/></linearGradient></defs><rect width='32' height='32' rx='8' fill='url(%23g)'/><circle cx='16' cy='16' r='14' stroke='white' stroke-width='1.5'/><circle cx='16' cy='16' r='8' fill='white'/><line x1='8' y1='16' x2='24' y2='16' stroke='white' stroke-width='1.5' stroke-linecap='round'/><line x1='16' y1='8' x2='16' y2='24' stroke='white' stroke-width='1.5' stroke-linecap='round'/></svg>" />
+
+  <!-- Google Fonts: Fraunces (headings) + Inter (body) -->
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,600&family=Inter:wght@400;500&display=swap"
+        rel="stylesheet" />
+
+  <link rel="stylesheet" href="style.css" />
+
+  <!-- If JavaScript is disabled, force the hero visible
+       (its entrance animation is JS-triggered). -->
+  <noscript>
+    <style>
+      .hero-reveal {
+        opacity: 1;
+        transform: none;
+      }
+    </style>
+  </noscript>
+</head>
+<body>
+
+  <!-- ===================== Navbar ===================== -->
+  <header class="navbar" id="navbar">
+    <a href="#" class="navbar-brand" aria-label="Lucid home">
+      <svg class="logo-icon" aria-hidden="true" width="28" height="28" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <defs>
+          <linearGradient id="logoGradient" x1="0" y1="0" x2="32" y2="32" gradientUnits="userSpaceOnUse">
+            <stop offset="0%" stop-color="#60A5FA"/>
+            <stop offset="100%" stop-color="#BFDBFE"/>
+          </linearGradient>
+        </defs>
+        <rect width="32" height="32" rx="8" fill="url(#logoGradient)"/>
+        <circle cx="16" cy="16" r="14" stroke="white" stroke-width="1.5"/>
+        <circle cx="16" cy="16" r="8" fill="white"/>
+        <line x1="8" y1="16" x2="24" y2="16" stroke="white" stroke-width="1.5" stroke-linecap="round"/>
+        <line x1="16" y1="8" x2="16" y2="24" stroke="white" stroke-width="1.5" stroke-linecap="round"/>
+      </svg>
+      <span>Lucid</span>
+    </a>
+    <nav class="navbar-links" aria-label="Main navigation">
+      <a href="#problem">Problem</a>
+      <a href="#solution">Solution</a>
+      <a href="#features">Features</a>
+      <a href="#how-works">How it works</a>
+      <a href="#faq">FAQ</a>
+    </nav>
+    <a href="#cta" class="btn btn-primary">Join the waitlist</a>
+
+    <!-- Mobile menu button -->
+    <button class="navbar-toggle" aria-label="Open menu" aria-expanded="false" aria-controls="mobile-menu">
+      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <line x1="3" y1="6" x2="21" y2="6"></line>
+        <line x1="3" y1="12" x2="21" y2="12"></line>
+        <line x1="3" y1="18" x2="21" y2="18"></line>
+      </svg>
+    </button>
+  </header>
+
+  <!-- Mobile menu drawer -->
+  <div class="mobile-menu" id="mobile-menu" role="dialog" aria-label="Mobile menu" hidden>
+    <nav class="mobile-menu-links">
+      <a href="#problem">Problem</a>
+      <a href="#solution">Solution</a>
+      <a href="#features">Features</a>
+      <a href="#how-works">How it works</a>
+      <a href="#faq">FAQ</a>
+      <a href="#cta" class="btn btn-primary" style="width:100%; text-align:center; margin-top: var(--space-4);">Join the waitlist</a>
+    </nav>
+  </div>
+  <div class="mobile-menu-overlay" id="mobile-menu-overlay" hidden></div>
+
+  <main>
+
+    <!-- ===================== 1. Hero + 2. Search demo ===================== -->
+    <section id="hero" class="section hero" aria-label="Hero">
+      <div class="hero-reveal">
+        <h1 class="hero-title">Find a link you saved but lost.</h1>
+        <p class="hero-subtitle">Bookmarks, screenshots, and links you shared with yourself — Lucid finds what
+          you lost, no matter which app it's buried in.</p>
+        <a href="#cta" class="btn btn-primary">Join the waitlist</a>
+
+        <!-- Search-bar demo: shows the product in action -->
+        <div class="hero-search" aria-label="Lucid search preview">
+          <div class="hero-search-input">
+            <svg class="hero-search-icon" aria-hidden="true" width="18" height="18" viewBox="0 0 24 24" fill="none"
+                 stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <circle cx="11" cy="11" r="8"></circle>
+              <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+            </svg>
+            <span class="hero-search-text">"Python async tutorial"</span>
+          </div>
+          <div class="hero-search-result">
+            <span class="hero-search-result-label">Found it</span>
+            <span class="hero-search-result-title">Async Python: a beginner's guide</span>
+            <span class="hero-search-result-source">From a bookmark · March 2026</span>
+          </div>
+          <div class="hero-search-tags">
+            <span class="search-tag">Bookmarks</span>
+            <span class="search-tag">Screenshots</span>
+            <span class="search-tag">Messages</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Product mockup image -->
+      <div class="hero-visual">
+        <img src="assets/hero-app.svg"
+             alt="Lucid app preview: one search for 'Python async tutorial' finds results from Bookmarks, Screenshots, and Messages"
+             width="720" height="620" />
+      </div>
+    </section>
+
+    <!-- ===================== 3. The problem ===================== -->
+    <section id="problem" class="section reveal" aria-label="Problem">
+      <h2 class="section-title">You saved it. So why can't you find it?</h2>
+      <p class="section-subtitle">"I know I saved it somewhere..." — a bookmark here, a screenshot there, a link you
+        messaged yourself. Your saved things are scattered across five apps.</p>
+      <p class="section-subtitle">So a 30-second search turns into 30 minutes of clicking through history, folders,
+        and chats. Sometimes you give up — and search the same thing all over again.</p>
+    </section>
+
+    <!-- ===================== Solution (kept per mission) ===================== -->
+    <section id="solution" class="section reveal" aria-label="Solution">
+      <h2 class="section-title">One search box. Everything you've saved.</h2>
+      <p class="section-subtitle">Type what you remember — a topic, a word, a name. Lucid searches across the places
+        you actually save and brings back what you lost.</p>
+      <p class="section-subtitle">Your data stays on your device. No ads. No selling your history. Just your stuff,
+        quietly organized.</p>
+    </section>
+
+    <!-- ===================== 4. How Lucid works ===================== -->
+    <section id="how-works" class="section reveal" aria-label="How it works">
+      <h2 class="section-title">How Lucid works</h2>
+      <p class="section-subtitle">Four simple steps from "I saved it" to "found it".</p>
+      <div class="how-works-grid">
+        <div class="work-step">
+          <span class="step-icon">1</span>
+          <h3>Save</h3>
+          <p>Bookmark, screenshot, or send yourself links across your apps and devices.</p>
+        </div>
+        <div class="work-step">
+          <span class="step-icon">2</span>
+          <h3>Forget</h3>
+          <p>Lose track of where you saved something — a tutorial, a reference, an important link.</p>
+        </div>
+        <div class="work-step">
+          <span class="step-icon">3</span>
+          <h3>Search</h3>
+          <p>Type what you remember into Lucid's one search box — a topic, a word, a name.</p>
+        </div>
+        <div class="work-step">
+          <span class="step-icon">4</span>
+          <h3>Find</h3>
+          <p>Lucid searches across your bookmarks, screenshots, and messages, and brings back what you lost.</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- ===================== 5. Cross-source search ===================== -->
+    <section id="cross-source" class="section reveal" aria-label="Cross-source search">
+      <h2 class="section-title">One search. Every place you save.</h2>
+      <p class="section-subtitle">Lucid brings together links and resources you saved across bookmarks,
+        screenshots, and shares — so you never dig through each app separately.</p>
+      <div class="section-visual">
+        <img src="assets/sources.svg"
+             alt="Diagram: one Lucid search box reaches Bookmarks, Screenshots, and Messages"
+             width="720" height="430" />
+      </div>
+      <div class="source-grid">
+        <div class="source-card">
+          <svg class="source-icon" aria-hidden="true" width="24" height="24" viewBox="0 0 24 24" fill="none"
+               stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M19 21l-7-4-7 4V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"></path>
+          </svg>
+          <h3>Bookmarks</h3>
+          <p>All the links you saved "for later" — found again in seconds.</p>
+        </div>
+        <div class="source-card">
+          <svg class="source-icon" aria-hidden="true" width="24" height="24" viewBox="0 0 24 24" fill="none"
+               stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"></path>
+            <circle cx="12" cy="13" r="4"></circle>
+          </svg>
+          <h3>Screenshots</h3>
+          <p>Text buried inside screenshots — searchable like normal links.</p>
+        </div>
+        <div class="source-card">
+          <svg class="source-icon" aria-hidden="true" width="24" height="24" viewBox="0 0 24 24" fill="none"
+               stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path>
+          </svg>
+          <h3>Messages</h3>
+          <p>Links you shared with yourself or friends — pulled out of old chats.</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- ===================== 6. Privacy-first ===================== -->
+    <section id="privacy" class="section reveal" aria-label="Privacy first">
+      <div class="privacy-panel">
+        <div class="privacy-layout">
+          <div class="privacy-visual">
+            <img src="assets/privacy.svg"
+                 alt="Shield illustration: Lucid keeps your data on your device"
+                 width="460" height="460" />
+          </div>
+          <div>
+            <h2 class="section-title">Private by design. No exceptions.</h2>
+            <ul class="privacy-list">
+              <li>
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                  <rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect>
+                  <path d="M7 11V7a5 5 0 0 1 10 0v4"></path>
+                </svg>
+                Your data stays on your device
+              </li>
+              <li>
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                  <path d="M23 4v6h-6"></path>
+                  <path d="M1 20v-6h6"></path>
+                  <path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10"></path>
+                  <path d="M20.49 15a9 9 0 0 1-14.85 3.36L1 14"></path>
+                </svg>
+                No ads, ever
+              </li>
+              <li>
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                  <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path>
+                </svg>
+                Your personal data is never sold
+              </li>
+            </ul>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ===================== 7. Example search results ===================== -->
+    <section id="example-results" class="section reveal" aria-label="Example search results">
+      <h2 class="section-title">See what you'll find</h2>
+      <p class="section-subtitle">Realistic result cards showing title, source, saved date, and a link.</p>
+      <div class="results-list">
+        <div class="result-card">
+          <div class="result-info">
+            <p class="result-title">Async/Await in Python — a real tutorial</p>
+            <p class="result-meta">From a bookmark · March 2026</p>
+          </div>
+          <span class="result-link">Open link</span>
+        </div>
+        <div class="result-card">
+          <div class="result-info">
+            <p class="result-title">Python async tutorial (screenshot of notes)</p>
+            <p class="result-meta">From a screenshot · February 2026</p>
+          </div>
+          <span class="result-link">Open link</span>
+        </div>
+        <div class="result-card">
+          <div class="result-info">
+            <p class="result-title">Async Python video — shared to myself</p>
+            <p class="result-meta">From a message · January 2026</p>
+          </div>
+          <span class="result-link">Open link</span>
+        </div>
+      </div>
+    </section>
+
+    <!-- ===================== 8. Before vs Lucid ===================== -->
+    <section id="before-vs" class="section reveal" aria-label="Before vs Lucid">
+      <h2 class="section-title">Before vs Lucid</h2>
+      <div class="compare-grid">
+        <div class="compare-col compare-before">
+          <h3>Before: searching through 5 apps</h3>
+          <ul>
+            <li>Open bookmarks — not there</li>
+            <li>Scroll screenshots — nothing</li>
+            <li>Search messages — missed it</li>
+            <li>Check notes, then files</li>
+            <li>Give up and re-search the web</li>
+          </ul>
+        </div>
+        <div class="compare-col compare-after">
+          <h3>After: one search box</h3>
+          <ul>
+            <li>Type one thing you remember</li>
+            <li>Lucid checks every place at once</li>
+            <li>Get the result in seconds</li>
+            <li>Open the link and move on</li>
+          </ul>
+        </div>
+      </div>
+    </section>
+
+    <!-- ===================== 9. Who it's for ===================== -->
+    <section id="who-for" class="section reveal" aria-label="Who it's for">
+      <h2 class="section-title">For <strong>students</strong> and <strong>beginner programmers</strong></h2>
+      <p class="section-subtitle">If you juggle assignments, tutorials, documentation, and project resources,
+        Lucid keeps them one search away.</p>
+      <ul class="audience-list">
+        <li>Students managing assignments and research</li>
+        <li>Beginner programmers tracking tutorials and code snippets</li>
+        <li>Anyone reading documentation and saving references</li>
+        <li>Project builders collecting resources and links</li>
+      </ul>
+    </section>
+
+    <!-- ===================== Features (3 cards per mission) ===================== -->
+    <section id="features" class="section reveal" aria-label="Features">
+      <h2 class="section-title">Made simple on purpose.</h2>
+      <p class="section-subtitle">Three quiet promises. Nothing more, nothing loud.</p>
+
+      <div class="feature-grid">
+
+        <article class="feature-card">
+          <svg class="feature-card-icon" aria-hidden="true" width="28" height="28" viewBox="0 0 24 24" fill="none"
+               stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <!-- lock: private by design -->
+            <rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect>
+            <path d="M7 11V7a5 5 0 0 1 10 0v4"></path>
+          </svg>
+          <h3 class="feature-card-title">Private by design</h3>
+          <p class="feature-card-text">Everything stays on your device. No accounts built on your data, no ads — just
+            your stuff, kept to yourself.</p>
+        </article>
+
+        <article class="feature-card">
+          <svg class="feature-card-icon" aria-hidden="true" width="28" height="28" viewBox="0 0 24 24" fill="none"
+               stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <!-- inbox: saved-in-one-place -->
+            <path d="M22 12h-6l-2 3h-4l-2-3H2"></path>
+            <path d="M5.45 5.11L2 12v6a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2v-6l-3.45-6.89A2 2 0 0 0 16.76 4H7.24a2 2 0 0 0-1.79 1.11z"></path>
+          </svg>
+          <h3 class="feature-card-title">Saved-in-one-place</h3>
+          <p class="feature-card-text">Links from bookmarks, screenshots, and messages — searchable from one calm box
+            instead of five scattered apps.</p>
+        </article>
+
+        <article class="feature-card">
+          <svg class="feature-card-icon" aria-hidden="true" width="28" height="28" viewBox="0 0 24 24" fill="none"
+               stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <!-- zap: faster than digging -->
+            <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"></polygon>
+          </svg>
+          <h3 class="feature-card-title">Faster than digging</h3>
+          <p class="feature-card-text">Finds what you remember in seconds — not 30 minutes of clicking through history
+            and folders.</p>
+        </article>
+
+      </div>
+    </section>
+
+    <!-- ===================== Social Proof ===================== -->
+    <section id="social-proof" class="section reveal" aria-label="What people say">
+      <h2 class="section-title">Built for people who save more than they find.</h2>
+      <blockquote class="testimonial">
+        <p>"I used to lose tutorials and references every week. Lucid found one I'd hunted for an hour — pulled it
+          straight out of a screenshot I'd forgotten."</p>
+        <cite>— Early Lucid user</cite>
+      </blockquote>
+    </section>
+
+    <!-- ===================== 11. Founder note ===================== -->
+    <section id="founder-note" class="section reveal" aria-label="A note from the founder">
+      <div class="founder-note">
+        <h2 class="section-title">The first user is me.</h2>
+        <p>I built Lucid because I lose links constantly — a tutorial I bookmarked, a screenshot of an error, a link
+          I sent myself at midnight. I wanted one calm place to find all of it again. If that sounds like you,
+          you're exactly who Lucid is for.</p>
+      </div>
+    </section>
+
+    <!-- ===================== 12. FAQ ===================== -->
+    <section id="faq" class="section reveal" aria-label="Frequently asked questions">
+      <h2 class="section-title">Frequently asked questions</h2>
+      <div class="faq-list">
+        <details class="faq-item">
+          <summary>Is my data private?</summary>
+          <p>Yes. Your data stays on your device. No ads, and your personal data is never sold.</p>
+        </details>
+        <details class="faq-item">
+          <summary>What does Lucid search?</summary>
+          <p>Links and resources you saved as bookmarks, screenshots, and messages — all in one search.</p>
+        </details>
+        <details class="faq-item">
+          <summary>When will Lucid be available?</summary>
+          <p>Lucid is in development. Join the waitlist and you'll be first to know when it launches.</p>
+        </details>
+        <details class="faq-item">
+          <summary>How much will it cost?</summary>
+          <p>Pricing isn't announced yet. Join the waitlist to hear the news as soon as it's ready.</p>
+        </details>
+      </div>
+    </section>
+
+    <!-- ===================== 10. Waitlist signup ===================== -->
+    <section id="cta" class="section reveal" aria-label="Join the waitlist">
+      <h2 class="section-title">Never lose another link.</h2>
+      <p class="section-subtitle">Lucid is coming. Join the waitlist and be first to know.</p>
+      <form class="waitlist-form" onsubmit="return handleWaitlistSubmit(this)">
+        <input class="input" type="text" name="name" placeholder="Your name (optional)" autocomplete="name" />
+        <input class="input" type="email" name="email" placeholder="you@example.com" required autocomplete="email" />
+        <button class="btn btn-primary" type="submit">
+          <span class="btn-text">Join Lucid</span>
+          <span class="btn-loader" style="display:none;" aria-hidden="true">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" style="animation: spin 1s linear infinite;">
+              <circle cx="12" cy="12" r="10" stroke-opacity="0.25"></circle>
+              <path d="M12 2a10 10 0 0 1 10 10"></path>
+            </svg>
+          </span>
+        </button>
+        <span class="waitlist-status" style="display:none; margin-top: var(--space-3); color: var(--color-primary);"></span>
+      </form>
+      <p class="cta-trust">Private by design. Your data stays on your device. Your email is stored privately on our server to contact you about the launch.</p>
+    </section>
+
+    <script>
+    // Minimal waitlist form handler — inline success, no page reload.
+    // Falls back to the native form submit if JS is disabled (the <noscript> path).
+    function handleWaitlistSubmit(form) {
+      const nameInput = form.querySelector('input[name="name"]');
+      const emailInput = form.querySelector('input[type="email"]');
+      const statusEl = form.querySelector('.waitlist-status');
+      const btn = form.querySelector('button.btn-primary');
+      const btnText = btn.querySelector('.btn-text');
+      const btnLoader = btn.querySelector('.btn-loader');
+      const email = emailInput.value.trim();
+      const name = nameInput ? nameInput.value.trim() : "";
+
+      if (!email) {
+        // browser will show its own required() prompt; abort here
+        return false;
+      }
+
+      // loading state
+      btn.disabled = true;
+      btnText.style.display = 'none';
+      btnLoader.style.display = 'inline-block';
+      statusEl.style.display = 'none';
+
+      // send to the Python server
+      fetch("/api/waitlist", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email, name })
+      })
+      .then(resp => {
+        if (!resp.ok) {
+          return resp.json().then(err => { throw new Error((err && err.message) || "Server error"); });
+        }
+        return resp.json();
+      })
+      .then(data => {
+        // show the server's message inline
+        statusEl.style.display = "block";
+        statusEl.textContent = data.message;
+        emailInput.value = "";
+        if (nameInput) nameInput.value = "";
+        setTimeout(() => { statusEl.style.display = "none"; }, 4000);
+      })
+      .catch(err => {
+        statusEl.style.display = "block";
+        statusEl.textContent = "Something went wrong. Please try again.";
+        console.error("waitlist error:", err);
+      })
+      .finally(() => {
+        btn.disabled = false;
+        btnText.style.display = 'inline';
+        btnLoader.style.display = 'none';
+      });
+
+      // prevent the default form submit so the page doesn't navigate away
+      return false;
+    }
+    </script>
+
+  </main>
+
+  <!-- ===================== 13. Footer ===================== -->
+  <footer class="footer">
+    <span class="footer-brand"><strong>Lucid</strong></span>
+    <span class="footer-tagline">Find anything you've ever saved.</span>
+    <div class="footer-actions">
+      <a href="#cta" class="footer-link"><strong>Join the waitlist</strong></a>
+    </div>
+    <div class="footer-links">
+      <span class="footer-privacy">Private by design</span>
+      <a href="mailto:hello@lucid.app" class="footer-mini">Contact</a>
+      <a href="https://github.com/" class="footer-mini" target="_blank" rel="noopener">GitHub</a>
+      <a href="/signin" class="footer-mini">Sign in</a>
+    </div>
+    <p class="footer-copy">&copy; 2026 <strong>Lucid</strong>. All rights reserved.</p>
+  </footer>
+
+  <script src="script.js"></script>
+</body>
+</html>
