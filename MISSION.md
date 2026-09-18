@@ -202,6 +202,11 @@ Welcome to your Founder Notebook. This is the single source of truth for your st
 | 2026-09-18 | Dashboard banner | None vs clear off-state | Dashboard shows a banner when no sender is configured, linking to the Connect page and the /email-help step-by-step guide | Done |
 | 2026-09-18 | Email failure handling | Hang forever vs safe timeout | SMTP calls now time out after 10s and the server is threaded (ThreadingHTTPServer) so a slow email can never freeze the site | Done |
 | 2026-09-18 | Server restart | Temp folder script vs in-repo script | Added start-server.py inside build-lab/ so the site can be restarted with one command if the box stops it | Done |
+| 2026-09-18 | Source control | No git vs local-only repo vs public GitHub | Public GitHub repo `lucid` under udawela-dev; all 10 commits pushed (landing page, sign-up, docs, and every feature); secrets (email_config.py, waitlist.db) gitignored | Done |
+| 2026-09-18 | GitHub Pages | Off vs on | Enabled Pages from `main` → https://udawela-dev.github.io/lucid/ — shows the static 13-section landing page; dynamic features (waitlist, sign-in, dashboard) need the live Python server in Codio | Done |
+| 2026-09-18 | Real email delivery | Configure vs defer | Deferred: real Gmail delivery needs a 16-char app password; founder chose not to set it up now. Outbox keeps recording every generated email; fast-fail guard skips non-app-passwords instantly; banner + Connect page remain for later | Done |
+| 2026-09-18 | Notification address | udawelashanwick vs uasanu | NOTIFY_EMAIL set to uasanu@gmail.com — the founder's real inbox | Done |
+| 2026-09-18 | App password confusion | Normal Gmail password vs 16-char app password | Found a regular password in email_config.py — Gmail rejects it; documented that app passwords are always 16 characters and added an instant skip for non-16-char values | Done |
 
 ---
 
@@ -249,6 +254,8 @@ Welcome to your Founder Notebook. This is the single source of truth for your st
 - [x] Outbox delete button (signed-in only)
 - [x] Connect-your-email page (/email-setup) with instant test email
 - [x] SMTP timeout + threaded server (site can never freeze on email)
+- [x] Public GitHub repo `lucid` created and all commits pushed
+- [x] GitHub Pages enabled (static landing page live)
 - [ ] Final visual polish and responsive testing (original spec polish complete)
 - [ ] ———
 - [ ] Pivot to bold/award-caliber design spec (SPECS/2026-09-18-bold-style) — new brand platform, motion system, and feature set under exploration
