@@ -3,13 +3,13 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Lucid — Sign In</title>
-  <meta name="description" content="Sign in to the Lucid founder dashboard." />
+  <title>Lucid — Sign Up</title>
+  <meta name="description" content="Create your Lucid founder account." />
   <link rel="stylesheet" href="style.css" />
 </head>
 <body>
 
-  <!-- keep the same navbar so the sign-in feels like part of the site -->
+  <!-- same navbar so sign-up feels like part of the site -->
   <header class="navbar" id="navbar">
     <a href="/" class="navbar-brand" aria-label="Lucid home">
       <span>Lucid</span>
@@ -23,14 +23,15 @@
   </header>
 
   <main style="max-width:72rem;margin:4rem auto;text-align:center;padding:0 1rem;">
-    <h1 style="font-size:clamp(2rem,5vw,3rem);margin-bottom:1rem;">Sign In</h1>
-    <p style="color:var(--color-text-muted);margin-bottom:2rem;">Founder only area — enter your email and password to open the waitlist dashboard.</p>
+    <h1 style="font-size:clamp(2rem,5vw,3rem);margin-bottom:1rem;">Sign Up</h1>
+    <p style="color:var(--color-text-muted);margin-bottom:2rem;">Create your account to open the waitlist dashboard.</p>
 
-    <form class="waitlist-form" style="justify-content:center;" onsubmit="return handleSignInSubmit(this)">
+    <form class="waitlist-form" style="justify-content:center;" onsubmit="return handleSignUpSubmit(this)">
+      <input class="input" type="text" name="name" placeholder="Your name" required autocomplete="name" />
       <input class="input" type="email" name="email" placeholder="you@example.com" required autocomplete="email" />
-      <input class="input" type="password" name="password" placeholder="Your password" required />
+      <input class="input" type="password" name="password" placeholder="Password (at least 4 characters)" required minlength="4" autocomplete="new-password" />
       <button class="btn btn-primary" type="submit">
-        <span class="btn-text">Sign In</span>
+        <span class="btn-text">Create account</span>
         <span class="btn-loader" style="display:none;" aria-hidden="true">
           <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" style="animation: spin 1s linear infinite;">
             <circle cx="12" cy="12" r="10" stroke-opacity="0.25"></circle>
@@ -42,8 +43,7 @@
     </form>
 
     <p style="margin-top:2rem; font-size:0.875rem; color:var(--color-text-muted);">
-      Don't have an account? <a href="/signup" style="color:var(--color-primary);">Sign up</a>
-      &middot; Not a founder? <a href="/#cta" style="color:var(--color-primary);">Join the waitlist</a>
+      Already have an account? <a href="/signin" style="color:var(--color-primary);">Sign in</a>
     </p>
   </main>
 
@@ -52,19 +52,21 @@
   </footer>
 
   <script>
-    function handleSignInSubmit(form) {
+    function handleSignUpSubmit(form) {
+      var nameInput = form.querySelector('input[name="name"]');
       var emailInput = form.querySelector('input[type="email"]');
       var passwordInput = form.querySelector('input[type="password"]');
       var statusEl = form.querySelector('.waitlist-status');
       var btn = form.querySelector('button.btn-primary');
       var btnText = btn.querySelector('.btn-text');
       var btnLoader = btn.querySelector('.btn-loader');
+      var name = nameInput.value.trim();
       var email = emailInput.value.trim();
-      var password = passwordInput.value.trim();
+      var password = passwordInput.value;
 
-      if (!email || !password) {
+      if (!name || !email || !password) {
         statusEl.style.display = 'block';
-        statusEl.textContent = 'Please enter both email and password';
+        statusEl.textContent = 'Please fill in name, email, and password';
         return false;
       }
 
@@ -74,21 +76,19 @@
       btnLoader.style.display = 'inline-block';
       statusEl.style.display = 'none';
 
-      // send to the Python server (the browser saves the session cookie
-      // automatically from the response's Set-Cookie header)
-      fetch("/api/signin", {
+      fetch("/api/signup", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email: email, password: password })
+        body: JSON.stringify({ name: name, email: email, password: password })
       })
       .then(function(resp) {
-        if (!resp.ok) {
-          return resp.json().then(function(err) { throw new Error((err && err.message) || "Server error"); });
-        }
-        return resp.json();
+        return resp.json().then(function(data) {
+          if (!resp.ok) throw new Error(data.message || "Server error");
+          return data;
+        });
       })
       .then(function(data) {
-        // signed in — go to the founder dashboard
+        // account created and session saved — go to the dashboard
         window.location.href = "/dashboard";
       })
       .catch(function(err) {

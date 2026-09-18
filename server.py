@@ -29,6 +29,7 @@ DB_PATH = os.path.join(BUILD_LAB, "waitlist.db")
 STATIC_DIR = BUILD_LAB
 PREFIX = "/api/waitlist"
 SIGNIN_PREFIX = "/api/signin"
+SIGNUP_PREFIX = "/api/signup"
 LOGOUT_PREFIX = "/api/logout"
 WAITLIST_EMAIL_PREFIX = "/api/waitlist/email"
 SESSION_COOKIE = "lucid_session"
@@ -66,8 +67,13 @@ def _get_db():
         pass  # column already exists
     conn.execute(
         "CREATE TABLE IF NOT EXISTS signin "
-        "(id INTEGER PRIMARY KEY, email TEXT, password TEXT, created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP)"
+        "(id INTEGER PRIMARY KEY, name TEXT, email TEXT, password TEXT, created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP)"
     )
+    # if the table already existed without the name column, add it
+    try:
+        conn.execute("ALTER TABLE signin ADD COLUMN name TEXT")
+    except sqlite3.OperationalError:
+        pass  # column already exists
     conn.execute(
         "CREATE TABLE IF NOT EXISTS sessions "
         "(token TEXT PRIMARY KEY, email TEXT, created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP)"
@@ -149,6 +155,8 @@ class Handler(BaseHTTPRequestHandler):
             self._send_html("waitlist-thanks.html")
         elif path == "/signin":
             self._send_html("signin.html")
+        elif path == "/signup":
+            self._send_html("signup.html")
         elif path == "/dashboard":
             if self._get_session_email():
                 self._send_html("dashboard.html")
@@ -169,6 +177,8 @@ class Handler(BaseHTTPRequestHandler):
             self._handle_waitlist()
         elif path == SIGNIN_PREFIX:
             self._handle_signin()
+        elif path == SIGNUP_PREFIX:
+            self._handle_signup()
         elif path == LOGOUT_PREFIX:
             self._handle_logout()
         elif path == WAITLIST_EMAIL_PREFIX:
@@ -313,6 +323,19 @@ class Handler(BaseHTTPRequestHandler):
             self._send_json(500, {"status": "error", "message": "Email is not configured. See email_config.py"})
 
     # ---- sign-in -------------------------------------------------------
+    def _start_session(self, email):
+        """Create a session row and prepare the cookie header."""
+        conn = _get_db()
+        cur = conn.cursor()
+        token = secrets.token_hex(16)
+        cur.execute("INSERT INTO sessions (token, email) VALUES (?, ?)", (token, email))
+        conn.commit()
+        conn.close()
+        self.send_header(
+            "Set-Cookie",
+            f"{SESSION_COOKIE}={token}; Path=/; HttpOnly; SameSite=Lax; Max-Age=604800",
+        )
+
     def _handle_signin(self):
         content_length = int(self.headers.get("Content-Length", 0))
         raw = self.rfile.read(content_length)
@@ -350,23 +373,61 @@ class Handler(BaseHTTPRequestHandler):
                 conn.close()
                 self._send_json(401, {"status": "error", "message": "Incorrect email or password"})
                 return
+        conn.close()
 
-        # create a session
-        token = secrets.token_hex(16)
-        cur.execute("INSERT INTO sessions (token, email) VALUES (?, ?)", (token, email))
+        self.send_response(200)
+        self.send_header("Content-Type", "application/json")
+        self.send_header("Content-Length", str(len(json.dumps({"status": "success", "message": "Signed in"}))))
+        self._start_session(email)
+        self.end_headers()
+        self.wfile.write(json.dumps({"status": "success", "message": "Signed in"}).encode())
+
+    # ---- sign-up -------------------------------------------------------
+    def _handle_signup(self):
+        content_length = int(self.headers.get("Content-Length", 0))
+        raw = self.rfile.read(content_length)
+        try:
+            data = json.loads(raw)
+        except (json.JSONDecodeError, ValueError):
+            self._send_json(400, {"status": "error", "message": "Invalid JSON"})
+            return
+
+        name = data.get("name", "").strip()
+        email = data.get("email", "").strip()
+        password = data.get("password", "").strip()
+
+        if not name:
+            self._send_json(400, {"status": "error", "message": "Please enter your name"})
+            return
+
+        if not email or "@" not in email or "." not in email.split("@")[-1]:
+            self._send_json(400, {"status": "error", "message": "Please enter a valid email address"})
+            return
+
+        if not password or len(password) < 4:
+            self._send_json(400, {"status": "error", "message": "Password must be at least 4 characters"})
+            return
+
+        conn = _get_db()
+        cur = conn.cursor()
+
+        # no duplicate accounts
+        existing = cur.execute("SELECT email FROM signin WHERE email = ?", (email,)).fetchone()
+        if existing:
+            conn.close()
+            self._send_json(409, {"status": "error", "message": "An account with that email already exists"})
+            return
+
+        cur.execute("INSERT INTO signin (name, email, password) VALUES (?, ?, ?)", (name, email, password))
         conn.commit()
         conn.close()
 
-        body = json.dumps({"status": "success", "message": "Signed in"}).encode()
         self.send_response(200)
         self.send_header("Content-Type", "application/json")
-        self.send_header("Content-Length", str(len(body)))
-        self.send_header(
-            "Set-Cookie",
-            f"{SESSION_COOKIE}={token}; Path=/; HttpOnly; SameSite=Lax; Max-Age=604800",
-        )
+        self.send_header("Content-Length", str(len(json.dumps({"status": "success", "message": "Account created"}))))
+        self._start_session(email)
         self.end_headers()
-        self.wfile.write(body)
+        self.wfile.write(json.dumps({"status": "success", "message": "Account created"}).encode())
 
     # ---- sign-out ------------------------------------------------------
     def _handle_logout(self):
