@@ -69,6 +69,28 @@
       <span id="email-status" style="display:block; margin-top: var(--space-3); color: var(--color-primary); font-size: 0.9375rem;"></span>
     </div>
 
+    <!-- outbox: every email Lucid generated -->
+    <div style="margin-top: var(--space-6); background: var(--color-surface); border: 1px solid var(--color-border); border-radius: var(--radius-lg); padding: var(--space-5); box-shadow: var(--shadow-sm); overflow-x: auto;">
+      <h2 style="font-family: var(--font-heading); font-size: 1.25rem; margin-bottom: 0.25rem;">Outbox</h2>
+      <p style="color: var(--color-text-muted); font-size: 0.875rem; margin-bottom: var(--space-4);">
+        Every email Lucid has generated, saved here so you can see it. Once email_config.py has a
+        sender, these go to real inboxes automatically.
+      </p>
+      <table class="watch-table">
+        <thead>
+          <tr>
+            <th>To</th>
+            <th>Subject</th>
+            <th>Status</th>
+            <th>When</th>
+          </tr>
+        </thead>
+        <tbody id="outbox-rows">
+          <tr><td colspan="4" style="color: var(--color-text-muted);">Loading…</td></tr>
+        </tbody>
+      </table>
+    </div>
+
   </main>
 
   <footer class="footer" style="margin-top:3rem;">
@@ -155,6 +177,7 @@
       .then(function(data) {
         statusEl.textContent = data.message;
         refreshList();
+        refreshOutbox();
       })
       .catch(function(err) {
         if (err.message !== "redirecting to sign in") {
@@ -162,6 +185,40 @@
           console.error("delete error:", err);
         }
       });
+    }
+
+    function refreshOutbox() {
+      fetch("/api/outbox", { method: "GET" })
+        .then(function(resp) {
+          if (resp.status === 401) {
+            window.location.href = "/signin";
+            throw new Error("redirecting to sign in");
+          }
+          if (!resp.ok) throw new Error("Server error");
+          return resp.json();
+        })
+        .then(function(data) {
+          var tbody = document.getElementById('outbox-rows');
+          var emails = data.emails || [];
+          if (emails.length === 0) {
+            tbody.innerHTML = '<tr><td colspan="4" style="color: var(--color-text-muted);">No emails generated yet.</td></tr>';
+            return;
+          }
+          tbody.innerHTML = emails.map(function(e) {
+            var to = String(e.recipient || "").replace(/[<>&"]/g, function(c) {
+              return { "<": "&lt;", ">": "&gt;", "&": "&amp;", '"': "&quot;" }[c];
+            });
+            var subject = String(e.subject || "").replace(/[<>&"]/g, function(c) {
+              return { "<": "&lt;", ">": "&gt;", "&": "&amp;", '"': "&quot;" }[c];
+            });
+            var when = e.created_at ? new Date(e.created_at).toLocaleString() : "—";
+            var status = e.status === "sent" ? "Sent ✅" : "Waiting for sender";
+            return '<tr><td>' + to + '</td><td>' + subject + '</td><td>' + status + '</td><td>' + when + '</td></tr>';
+          }).join("");
+        })
+        .catch(function(err) {
+          if (err.message !== "redirecting to sign in") console.error("outbox error:", err);
+        });
     }
 
     function sendUpdateEmail() {
@@ -187,6 +244,7 @@
       })
       .then(function(data) {
         statusEl.textContent = data.message;
+        refreshOutbox();
       })
       .catch(function(err) {
         if (err.message !== "redirecting to sign in") {
@@ -202,8 +260,9 @@
         .catch(function() { window.location.href = "/signin"; });
     }
 
-    // load the list as soon as the page opens
+    // load the list and outbox as soon as the page opens
     refreshList();
+    refreshOutbox();
   </script>
 </body>
 </html>

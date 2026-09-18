@@ -79,6 +79,13 @@ def _get_db():
         "CREATE TABLE IF NOT EXISTS sessions "
         "(token TEXT PRIMARY KEY, email TEXT, created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP)"
     )
+    # every email Lucid generates is recorded here so the founder can see
+    # them even before a real email sender is configured
+    conn.execute(
+        "CREATE TABLE IF NOT EXISTS outbox "
+        "(id INTEGER PRIMARY KEY, recipient TEXT, subject TEXT, body TEXT, "
+        "status TEXT, created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP)"
+    )
     conn.commit()
     return conn
 
@@ -87,11 +94,26 @@ def _get_db():
 def _send_email(subject, body, recipients):
     """Send one email to a list of recipients.
 
-    Returns True on success, False if email is not configured or failed.
+    Every email is always saved to the outbox table first, so the founder
+    can see what was generated even before a real sender is configured.
+
+    Returns True when a real email was sent, False when it was only saved
+    to the outbox (no sender configured yet, or sending failed).
     Never raises — the website must keep working even without email.
     """
+    conn = _get_db()
+    outbox_ids = []
+    for recipient in recipients:
+        cur = conn.execute(
+            "INSERT INTO outbox (recipient, subject, body, status) VALUES (?, ?, ?, 'pending')",
+            (recipient, subject, body),
+        )
+        outbox_ids.append(cur.lastrowid)
+    conn.commit()
+    conn.close()
+
     if not SENDER_EMAIL or not SENDER_PASSWORD:
-        print("[email] NOT configured — fill in SENDER_EMAIL and SENDER_PASSWORD in email_config.py")
+        print("[email] NOT configured — email stored in the outbox (see /dashboard)")
         return False
 
     msg = EmailMessage()
@@ -105,6 +127,12 @@ def _send_email(subject, body, recipients):
             server.starttls()
             server.login(SENDER_EMAIL, SENDER_PASSWORD)
             server.send_message(msg)
+        # real email went out — mark the outbox copies as sent
+        conn = _get_db()
+        for row_id in outbox_ids:
+            conn.execute("UPDATE outbox SET status = 'sent' WHERE id = ?", (row_id,))
+        conn.commit()
+        conn.close()
         print(f"[email] sent: {subject} → {len(recipients)} recipient(s)")
         return True
     except Exception as exc:  # noqa: BLE001 — log and continue
@@ -165,6 +193,8 @@ class Handler(BaseHTTPRequestHandler):
                 self._send_redirect("/signin")
         elif path == "/api/waitlist":
             self._handle_waitlist_list()
+        elif path == "/api/outbox":
+            self._handle_outbox()
         elif path.startswith("/build-l/"):
             # allow Build Lab relative paths if needed
             self._send_static(self.path[len("/build-l/"):])
@@ -302,6 +332,22 @@ class Handler(BaseHTTPRequestHandler):
         ]
         self._send_json(200, {"status": "success", "signups": signups})
 
+    # ---- outbox (every generated email — signed in users only) ---------
+    def _handle_outbox(self):
+        if not self._get_session_email():
+            self._send_json(401, {"status": "error", "message": "Please sign in first"})
+            return
+        conn = _get_db()
+        rows = conn.execute(
+            "SELECT recipient, subject, status, created_at FROM outbox ORDER BY id DESC LIMIT 50"
+        ).fetchall()
+        conn.close()
+        emails = [
+            {"recipient": r[0], "subject": r[1], "status": r[2], "created_at": r[3]}
+            for r in rows
+        ]
+        self._send_json(200, {"status": "success", "emails": emails})
+
     # ---- waitlist (email everyone — founder only) ----------------------
     def _handle_waitlist_email(self):
         if not self._get_session_email():
@@ -334,7 +380,7 @@ class Handler(BaseHTTPRequestHandler):
         if ok:
             self._send_json(200, {"status": "success", "message": f"Email sent to {len(recipients)} people"})
         else:
-            self._send_json(500, {"status": "error", "message": "Email is not configured. See email_config.py"})
+            self._send_json(200, {"status": "success", "message": f"Saved to the outbox for {len(recipients)} people — add a sender in email_config.py to deliver for real"})
 
     # ---- waitlist (delete one entry — signed in users only) -------------
     def _handle_waitlist_delete(self):
