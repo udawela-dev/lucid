@@ -16,6 +16,8 @@
   --color-text-muted: #64748B;        /* Muted steel */
   --color-border: #CBD5E1;            /* Subtle borders */
   --color-white: #FFFFFF;
+  --color-danger: #DC2626;            /* Deletion / destructive actions */
+  --color-danger-soft: #FECACA;       /* Soft red for borders */
 
   /* Typography — Fraunces (headings) + Inter (body) */
   --font-heading: "Fraunces", Georgia, serif;
@@ -182,6 +184,21 @@ main {
   background: transparent;
   color: var(--color-primary);
   border: 1px solid var(--color-primary);
+}
+
+.btn-delete {
+  background: transparent;
+  color: var(--color-danger);
+  border: 1px solid var(--color-danger-soft);
+  padding: 0.3rem 0.75rem;
+  font-size: 0.8125rem;
+  border-radius: var(--radius-sm);
+}
+
+.btn-delete:hover {
+  background: var(--color-danger);
+  color: var(--color-white);
+  border-color: var(--color-danger);
 }
 
 .btn-secondary:hover {

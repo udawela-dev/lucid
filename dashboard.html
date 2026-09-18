@@ -38,10 +38,11 @@
             <th>Name</th>
             <th>Email</th>
             <th>Joined</th>
+            <th></th>
           </tr>
         </thead>
         <tbody id="watch-rows">
-          <tr><td colspan="3" style="color: var(--color-text-muted);">Loading…</td></tr>
+          <tr><td colspan="4" style="color: var(--color-text-muted);">Loading…</td></tr>
         </tbody>
       </table>
       <p style="margin-top: var(--space-4); color: var(--color-text-muted); font-size: 0.875rem;">
@@ -98,7 +99,7 @@
           countEl.textContent = signups.length;
 
           if (signups.length === 0) {
-            tbody.innerHTML = '<tr><td colspan="3" style="color: var(--color-text-muted);">No one has joined yet. Share the site!</td></tr>';
+            tbody.innerHTML = '<tr><td colspan="4" style="color: var(--color-text-muted);">No one has joined yet. Share the site!</td></tr>';
           } else {
             tbody.innerHTML = signups.map(function(s) {
               // simple escaping so user names/emails can't break the table
@@ -109,7 +110,8 @@
                 return { "<": "&lt;", ">": "&gt;", "&": "&amp;", '"': "&quot;" }[c];
               });
               var when = s.created_at ? new Date(s.created_at).toLocaleString() : "—";
-              return '<tr><td>' + name + '</td><td>' + em + '</td><td>' + when + '</td></tr>';
+              return '<tr><td>' + name + '</td><td>' + em + '</td><td>' + when + '</td>' +
+                '<td><button class="btn btn-delete" onclick="deleteSignup(this)">Delete</button></td></tr>';
             }).join("");
           }
           statusEl.textContent = "";
@@ -125,6 +127,41 @@
     function toggleEmailBox() {
       var box = document.getElementById('email-box');
       box.hidden = !box.hidden;
+    }
+
+    function deleteSignup(btn) {
+      // find the email in this row (second cell)
+      var email = btn.parentNode.parentNode.cells[1].textContent;
+      if (!confirm("Remove " + email + " from the waitlist?")) return;
+
+      var statusEl = document.getElementById('status-msg');
+      statusEl.textContent = "Deleting…";
+
+      fetch("/api/waitlist/delete", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email: email })
+      })
+      .then(function(resp) {
+        if (resp.status === 401) {
+          window.location.href = "/signin";
+          throw new Error("redirecting to sign in");
+        }
+        return resp.json().then(function(data) {
+          if (!resp.ok) throw new Error(data.message || "Server error");
+          return data;
+        });
+      })
+      .then(function(data) {
+        statusEl.textContent = data.message;
+        refreshList();
+      })
+      .catch(function(err) {
+        if (err.message !== "redirecting to sign in") {
+          statusEl.textContent = err.message || "Something went wrong.";
+          console.error("delete error:", err);
+        }
+      });
     }
 
     function sendUpdateEmail() {

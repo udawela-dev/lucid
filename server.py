@@ -32,6 +32,7 @@ SIGNIN_PREFIX = "/api/signin"
 SIGNUP_PREFIX = "/api/signup"
 LOGOUT_PREFIX = "/api/logout"
 WAITLIST_EMAIL_PREFIX = "/api/waitlist/email"
+WAITLIST_DELETE_PREFIX = "/api/waitlist/delete"
 SESSION_COOKIE = "lucid_session"
 
 # email settings — safe defaults, real values come from email_config.py
@@ -183,6 +184,8 @@ class Handler(BaseHTTPRequestHandler):
             self._handle_logout()
         elif path == WAITLIST_EMAIL_PREFIX:
             self._handle_waitlist_email()
+        elif path == WAITLIST_DELETE_PREFIX:
+            self._handle_waitlist_delete()
         else:
             self._send_404()
 
@@ -332,6 +335,36 @@ class Handler(BaseHTTPRequestHandler):
             self._send_json(200, {"status": "success", "message": f"Email sent to {len(recipients)} people"})
         else:
             self._send_json(500, {"status": "error", "message": "Email is not configured. See email_config.py"})
+
+    # ---- waitlist (delete one entry — signed in users only) -------------
+    def _handle_waitlist_delete(self):
+        if not self._get_session_email():
+            self._send_json(401, {"status": "error", "message": "Please sign in first"})
+            return
+
+        content_length = int(self.headers.get("Content-Length", 0))
+        raw = self.rfile.read(content_length)
+        try:
+            data = json.loads(raw) if raw else {}
+        except (json.JSONDecodeError, ValueError):
+            data = {}
+
+        email = (data.get("email") or "").strip()
+        if not email:
+            self._send_json(400, {"status": "error", "message": "Missing email"})
+            return
+
+        conn = _get_db()
+        cur = conn.cursor()
+        cur.execute("DELETE FROM waitlist WHERE email = ?", (email,))
+        affected = cur.rowcount
+        conn.commit()
+        conn.close()
+
+        if affected == 1:
+            self._send_json(200, {"status": "success", "message": "Removed from the list"})
+        else:
+            self._send_json(404, {"status": "error", "message": "No one with that email is on the list"})
 
     # ---- sign-in -------------------------------------------------------
     def _start_session(self, email):
