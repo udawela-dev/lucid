@@ -63,9 +63,14 @@
     </div>
 
     <div style="background: var(--color-surface); border: 1px solid var(--color-border); border-radius: var(--radius-lg); padding: var(--space-5); box-shadow: var(--shadow-sm); margin-bottom: var(--space-6);">
-      <h2 style="font-family: var(--font-heading); font-size: 1.25rem; margin-bottom: var(--space-4);">Step 4 — Give the key to Lucid</h2>
+      <h2 style="font-family: var(--font-heading); font-size: 1.25rem; margin-bottom: var(--space-4);">Step 4 — Give the key to Lucid (easiest way)</h2>
       <p style="color: var(--color-secondary); line-height: 1.8;">
-        Open <strong>build-lab/email_config.py</strong> and fill in two lines:
+        Open the <a href="/email-setup"><strong>Connect your email</strong></a> page on the site,
+        type your Gmail and the app password, and press the button. Lucid saves it for you and
+        sends a test email immediately. All done!
+      </p>
+      <p style="color: var(--color-secondary); line-height: 1.8; margin-top: var(--space-3);">
+        (You can also edit <strong>build-lab/email_config.py</strong> directly if you prefer.)
       </p>
       <pre style="background: var(--color-surface); border: 1px solid var(--color-border); border-radius: var(--radius-md); padding: var(--space-4); overflow-x: auto; font-size: 0.875rem; color: var(--color-secondary);">
 SENDER_EMAIL = "yourname@gmail.com"

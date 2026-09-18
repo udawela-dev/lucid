@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Lucid — Connect your email</title>
+  <meta name="description" content="Connect a Gmail account so Lucid can send real emails." />
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+
+  <header class="navbar" id="navbar">
+    <a href="/" class="navbar-brand" aria-label="Lucid home">
+      <span>Lucid</span>
+    </a>
+    <nav class="navbar-links" aria-label="Main navigation">
+      <a href="/">Home</a>
+      <a href="/dashboard">Watch area</a>
+    </nav>
+  </header>
+
+  <main style="max-width: 42rem; margin: 4rem auto; padding: 0 1rem;">
+
+    <h1 style="font-size: clamp(2rem, 5vw, 2.5rem); margin-bottom: 0.5rem;">Connect your email</h1>
+    <p style="color: var(--color-text-muted); margin-bottom: var(--space-6);">
+      Fill in the three boxes, press the button, and Lucid sends a test email to your real
+      Gmail right away. Only you can see this — your password never reaches GitHub.
+    </p>
+
+    <div style="background: var(--color-surface); border: 1px solid var(--color-border); border-radius: var(--radius-lg); padding: var(--space-5); box-shadow: var(--shadow-sm);">
+      <label style="display:block; margin-bottom: var(--space-2); color: var(--color-secondary); font-size:0.9375rem;" for="sender-email">
+        Gmail that SENDS the emails
+      </label>
+      <input class="input" id="sender-email" type="email" placeholder="yourname@gmail.com" style="margin-bottom: var(--space-4);" />
+
+      <label style="display:block; margin-bottom: var(--space-2); color: var(--color-secondary); font-size:0.9375rem;" for="sender-password">
+        App password (16 characters)
+      </label>
+      <input class="input" id="sender-password" type="password" placeholder="abcd efgh ijkl mnop" style="margin-bottom: var(--space-4);" />
+
+      <label style="display:block; margin-bottom: var(--space-2); color: var(--color-secondary); font-size:0.9375rem;" for="notify-email">
+        Where YOUR notifications go (e.g. "someone joined the waitlist")
+      </label>
+      <input class="input" id="notify-email" type="email" placeholder="yourname@gmail.com" style="margin-bottom: var(--space-5);" />
+
+      <button class="btn btn-primary" onclick="connectEmail()">Connect &amp; send test email</button>
+      <span id="connect-status" style="display:block; margin-top: var(--space-3); color: var(--color-primary); font-size: 0.9375rem;"></span>
+    </div>
+
+    <p style="color: var(--color-text-muted); margin-top: var(--space-6); font-size: 0.9375rem;" id="need-help">
+      Don't have an app password yet? Follow the steps on the
+      <a href="/email-help">how-to page</a> (about 2 minutes).
+    </p>
+
+  </main>
+
+  <footer class="footer" style="margin-top:3rem;">
+    <p class="footer-copy">&copy; 2026 <strong>Lucid</strong>. All rights reserved.</p>
+  </footer>
+
+  <script>
+    function connectEmail() {
+      var statusEl = document.getElementById('connect-status');
+      var senderEmail = document.getElementById('sender-email').value.trim();
+      var senderPassword = document.getElementById('sender-password').value.trim();
+      var notifyEmail = document.getElementById('notify-email').value.trim();
+
+      if (!senderEmail || !senderPassword || !notifyEmail) {
+        statusEl.textContent = "Please fill in all three boxes.";
+        return;
+      }
+
+      statusEl.textContent = "Connecting and sending test email…";
+      fetch("/api/email-config", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          sender_email: senderEmail,
+          sender_password: senderPassword,
+          notify_email: notifyEmail
+        })
+      })
+      .then(function(resp) {
+        if (resp.status === 401) {
+          window.location.href = "/signin";
+          throw new Error("redirecting to sign in");
+        }
+        return resp.json();
+      })
+      .then(function(data) {
+        statusEl.textContent = data.message;
+      })
+      .catch(function(err) {
+        if (err.message !== "redirecting to sign in") {
+          statusEl.textContent = "Something went wrong. Please try again.";
+          console.error("connect error:", err);
+        }
+      });
+    }
+  </script>
+</body>
+</html>

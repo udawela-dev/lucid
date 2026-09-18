@@ -18,7 +18,7 @@ import secrets
 import smtplib
 import sqlite3
 from email.message import EmailMessage
-from http.server import HTTPServer, BaseHTTPRequestHandler
+from http.server import ThreadingHTTPServer, BaseHTTPRequestHandler
 from urllib.parse import urlparse
 
 # ── configuration ──────────────────────────────────────────────────────
@@ -33,6 +33,7 @@ SIGNUP_PREFIX = "/api/signup"
 LOGOUT_PREFIX = "/api/logout"
 WAITLIST_EMAIL_PREFIX = "/api/waitlist/email"
 WAITLIST_DELETE_PREFIX = "/api/waitlist/delete"
+EMAIL_CONFIG_PREFIX = "/api/email-config"
 SESSION_COOKIE = "lucid_session"
 
 # email settings — safe defaults, real values come from email_config.py
@@ -53,6 +54,62 @@ try:
     SENDER_PASSWORD = SENDER_PASSWORD.replace(" ", "")
 except ImportError:
     pass  # email_config.py missing → email just gets skipped
+
+
+# ── email config (saved from the /email-setup page) ────────────────────
+EMAIL_CONFIG_PATH = os.path.join(BUILD_LAB, "email_config.py")
+
+
+def _reload_email_config():
+    """Re-read email_config.py after the founder saves new values."""
+    import importlib
+
+    try:
+        import email_config
+
+        importlib.reload(email_config)
+    except Exception:
+        return
+    globals()["SENDER_EMAIL"] = getattr(email_config, "SENDER_EMAIL", "")
+    globals()["SENDER_PASSWORD"] = str(
+        getattr(email_config, "SENDER_PASSWORD", "")
+    ).replace(" ", "")
+    globals()["NOTIFY_EMAIL"] = getattr(email_config, "NOTIFY_EMAIL", "")
+    globals()["SMTP_SERVER"] = getattr(email_config, "SMTP_SERVER", "smtp.gmail.com")
+    globals()["SMTP_PORT"] = getattr(email_config, "SMTP_PORT", 587)
+
+
+def _write_email_config(sender_email, sender_password, notify_email):
+    """Save the founder's email settings into email_config.py."""
+    content = (
+        "# =====================================================\n"
+        "# Email settings for the Lucid server.\n"
+        "#\n"
+        "# This file is private to you (gitignored) and is never\n"
+        "# uploaded to GitHub. Values are saved by the /email-setup page.\n"
+        "# =====================================================\n"
+        "\n"
+        "# The Gmail address that SENDS the emails (must have the\n"
+        "# app password enabled for it).\n"
+        'SENDER_EMAIL = "{}"\n'
+        "\n"
+        "# The 16-character app password (no spaces needed).\n"
+        'SENDER_PASSWORD = "{}"\n'
+        "\n"
+        '# Where "someone joined the waitlist" notifications go.\n'
+        'NOTIFY_EMAIL = "{}"\n'
+        "\n"
+        "# Gmail's SMTP server details (usually correct as-is).\n"
+        'SMTP_SERVER = "smtp.gmail.com"\n'
+        "SMTP_PORT = 587\n"
+    ).format(
+        sender_email.replace('"', ""),
+        sender_password.replace('"', ""),
+        notify_email.replace('"', ""),
+    )
+    with open(EMAIL_CONFIG_PATH, "w", encoding="utf-8") as f:
+        f.write(content)
+    _reload_email_config()
 
 # ── database ───────────────────────────────────────────────────────────
 def _get_db():
@@ -123,7 +180,7 @@ def _send_email(subject, body, recipients):
     msg.set_content(body)
 
     try:
-        with smtplib.SMTP(SMTP_SERVER, SMTP_PORT) as server:
+        with smtplib.SMTP(SMTP_SERVER, SMTP_PORT, timeout=10) as server:
             server.starttls()
             server.login(SENDER_EMAIL, SENDER_PASSWORD)
             server.send_message(msg)
@@ -188,6 +245,11 @@ class Handler(BaseHTTPRequestHandler):
             self._send_html("signup.html")
         elif path == "/email-help":
             self._send_html("email-help.html")
+        elif path == "/email-setup":
+            if self._get_session_email():
+                self._send_html("email-setup.html")
+            else:
+                self._send_redirect("/signin")
         elif path == "/dashboard":
             if self._get_session_email():
                 self._send_html("dashboard.html")
@@ -218,6 +280,8 @@ class Handler(BaseHTTPRequestHandler):
             self._handle_waitlist_email()
         elif path == WAITLIST_DELETE_PREFIX:
             self._handle_waitlist_delete()
+        elif path == EMAIL_CONFIG_PREFIX:
+            self._handle_email_config()
         else:
             self._send_404()
 
@@ -418,6 +482,53 @@ class Handler(BaseHTTPRequestHandler):
         else:
             self._send_json(404, {"status": "error", "message": "No one with that email is on the list"})
 
+    # ---- email setup (save Gmail + app password — signed in users) ------
+    def _handle_email_config(self):
+        if not self._get_session_email():
+            self._send_json(401, {"status": "error", "message": "Please sign in first"})
+            return
+
+        content_length = int(self.headers.get("Content-Length", 0))
+        raw = self.rfile.read(content_length)
+        try:
+            data = json.loads(raw) if raw else {}
+        except (json.JSONDecodeError, ValueError):
+            data = {}
+
+        sender_email = (data.get("sender_email") or "").strip()
+        sender_password = (data.get("sender_password") or "").replace(" ", "").strip()
+        notify_email = (data.get("notify_email") or "").strip()
+
+        def valid_email(value):
+            return "@" in value and "." in value.split("@")[-1]
+
+        if not valid_email(sender_email):
+            self._send_json(400, {"status": "error", "message": "Please enter a valid sender Gmail address"})
+            return
+        if len(sender_password) < 8:
+            self._send_json(400, {"status": "error", "message": "The app password looks too short — it should be 16 characters"})
+            return
+        if not valid_email(notify_email):
+            self._send_json(400, {"status": "error", "message": "Please enter a valid notification email address"})
+            return
+
+        _write_email_config(sender_email, sender_password, notify_email)
+
+        # immediately send a real test email so the founder sees it work
+        ok = _send_email(
+            "Lucid is connected!",
+            "Hi!\n\n"
+            "This test email proves Lucid can now deliver real email to this inbox.\n\n"
+            "From now on you will receive a notification whenever someone joins the waitlist,\n"
+            "and new signups get a welcome email automatically.\n\n"
+            "— The Lucid team",
+            [notify_email],
+        )
+        if ok:
+            self._send_json(200, {"status": "success", "message": f"Connected! A test email was sent to {notify_email} — check your inbox."})
+        else:
+            self._send_json(200, {"status": "error", "message": "Settings were saved, but the test email failed. Gmail usually rejects the login — double-check the app password and that 2-Step Verification is ON for that Gmail."})
+
     # ---- sign-in -------------------------------------------------------
     def _start_session(self, email):
         """Create a session row and prepare the cookie header."""
@@ -558,7 +669,7 @@ def main():
     # ensure DB + tables exist on first run
     _get_db().close()
 
-    server = HTTPServer(("0.0.0.0", PORT), Handler)
+    server = ThreadingHTTPServer(("0.0.0.0", PORT), Handler)
     print(f"Lucid waitlist server running at http://0.0.0.0:{PORT}/")
     print(f"  (Codio public URL: https://{os.environ.get('CODIO_HOSTNAME','localhost')}-3000.codio.io/)")
     if not SENDER_EMAIL or not SENDER_PASSWORD:
