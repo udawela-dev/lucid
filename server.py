@@ -260,6 +260,17 @@ class Handler(BaseHTTPRequestHandler):
         conn.close()
 
         if affected == 1:
+            # welcome email to the new joiner
+            _send_email(
+                "Welcome to Lucid — find a link you saved but lost",
+                f"Hi{(' ' + name) if name else ''}!\n\n"
+                f"Thanks for joining the Lucid waitlist. Lucid finds links you saved but lost — "
+                f"across bookmarks, screenshots, and messages — from one calm search box.\n\n"
+                f"We'll email you as soon as Lucid is ready.\n\n"
+                f"— The Lucid team",
+                [email],
+            )
+            # notification to the founder
             _send_email(
                 "New Lucid waitlist signup",
                 f"Someone new joined the Lucid waitlist!\n\n"
