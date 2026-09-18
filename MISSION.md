@@ -195,6 +195,13 @@ Welcome to your Founder Notebook. This is the single source of truth for your st
 | 2026-09-18 | Join notifications | No email vs notify founder on each join | Added SMTP notifications (email_config.py) — founder gets an email with the joiner's name/email on every new signup; gracefully skipped until credentials are set | Done |
 | 2026-09-18 | Account creation | First sign-in auto-creates vs explicit sign-up page | Added dedicated /signup page + /api/signup endpoint (name, email, password) with duplicate-account guard; sign-in still auto-creates the founder account when the table is empty | Done |
 | 2026-09-18 | Hero + section visuals | Plain mockups vs professional SVG images | Added assets/hero-app.svg (browser mockup), assets/sources.svg (cross-source diagram), assets/privacy.svg (shield) — inspired by the "Copywriter" WebWave template style, in the light-blue theme; external files keep no-hex rule in HTML | Done |
+| 2026-09-18 | Welcome emails | No email vs welcome to new joiners | New waitlist joiners AND new account creators get an automatic "Welcome to Lucid" email; founder gets a "New Lucid waitlist signup" notification on every join | Done |
+| 2026-09-18 | Waitlist delete | No removal vs delete button | Watch area now has a Delete button per row (signed-in only, confirm before removing) — POST /api/waitlist/delete by email | Done |
+| 2026-09-18 | Outbox | Silent email failure vs visible outbox | Every generated email is saved to an `outbox` table and shown on the dashboard (recipient, subject, status, time) — no more silent "not configured" dead ends | Done |
+| 2026-09-18 | Email setup UX | Edit config file vs on-site form | New /email-setup page (signed-in only): type Gmail + app password + notification address, press one button; server saves email_config.py and test-sends a real email immediately | Done |
+| 2026-09-18 | Dashboard banner | None vs clear off-state | Dashboard shows a banner when no sender is configured, linking to the Connect page and the /email-help step-by-step guide | Done |
+| 2026-09-18 | Email failure handling | Hang forever vs safe timeout | SMTP calls now time out after 10s and the server is threaded (ThreadingHTTPServer) so a slow email can never freeze the site | Done |
+| 2026-09-18 | Server restart | Temp folder script vs in-repo script | Added start-server.py inside build-lab/ so the site can be restarted with one command if the box stops it | Done |
 
 ---
 
@@ -235,6 +242,13 @@ Welcome to your Founder Notebook. This is the single source of truth for your st
 - [x] Footer redesign with bold text
 - [x] Fixed static file serving (style.css/script.css 200)
 - [x] Added optional name field to waitlist (form + server + DB migration)
+- [x] Sign-up page for anyone (name, email, password) with duplicate guard
+- [x] Founder dashboard: sign-in/sign-out, waitlist table, refresh, count
+- [x] Delete button for waitlist rows (signed-in only)
+- [x] Outbox: every generated email saved and visible on the dashboard
+- [x] Outbox delete button (signed-in only)
+- [x] Connect-your-email page (/email-setup) with instant test email
+- [x] SMTP timeout + threaded server (site can never freeze on email)
 - [ ] Final visual polish and responsive testing (original spec polish complete)
 - [ ] ———
 - [ ] Pivot to bold/award-caliber design spec (SPECS/2026-09-18-bold-style) — new brand platform, motion system, and feature set under exploration

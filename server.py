@@ -34,6 +34,7 @@ LOGOUT_PREFIX = "/api/logout"
 WAITLIST_EMAIL_PREFIX = "/api/waitlist/email"
 WAITLIST_DELETE_PREFIX = "/api/waitlist/delete"
 EMAIL_CONFIG_PREFIX = "/api/email-config"
+OUTBOX_DELETE_PREFIX = "/api/outbox/delete"
 SESSION_COOKIE = "lucid_session"
 
 # email settings — safe defaults, real values come from email_config.py
@@ -173,6 +174,12 @@ def _send_email(subject, body, recipients):
         print("[email] NOT configured — email stored in the outbox (see /dashboard)")
         return False
 
+    if len(SENDER_PASSWORD) != 16:
+        # Gmail app passwords are always 16 characters. Anything else is a
+        # normal password, which Gmail refuses — fail fast instead of waiting.
+        print("[email] skipped — app passwords are always 16 characters (got %d)" % len(SENDER_PASSWORD))
+        return False
+
     msg = EmailMessage()
     msg["Subject"] = subject
     msg["From"] = SENDER_EMAIL
@@ -282,6 +289,8 @@ class Handler(BaseHTTPRequestHandler):
             self._handle_waitlist_delete()
         elif path == EMAIL_CONFIG_PREFIX:
             self._handle_email_config()
+        elif path == OUTBOX_DELETE_PREFIX:
+            self._handle_outbox_delete()
         else:
             self._send_404()
 
@@ -405,11 +414,11 @@ class Handler(BaseHTTPRequestHandler):
             return
         conn = _get_db()
         rows = conn.execute(
-            "SELECT recipient, subject, status, created_at FROM outbox ORDER BY id DESC LIMIT 50"
+            "SELECT id, recipient, subject, status, created_at FROM outbox ORDER BY id DESC LIMIT 50"
         ).fetchall()
         conn.close()
         emails = [
-            {"recipient": r[0], "subject": r[1], "status": r[2], "created_at": r[3]}
+            {"id": r[0], "recipient": r[1], "subject": r[2], "status": r[3], "created_at": r[4]}
             for r in rows
         ]
         self._send_json(200, {
@@ -417,6 +426,39 @@ class Handler(BaseHTTPRequestHandler):
             "emails": emails,
             "email_configured": bool(SENDER_EMAIL and SENDER_PASSWORD),
         })
+
+    # ---- outbox (delete one entry — signed in users only) --------------
+    def _handle_outbox_delete(self):
+        if not self._get_session_email():
+            self._send_json(401, {"status": "error", "message": "Please sign in first"})
+            return
+
+        content_length = int(self.headers.get("Content-Length", 0))
+        raw = self.rfile.read(content_length)
+        try:
+            data = json.loads(raw) if raw else {}
+        except (json.JSONDecodeError, ValueError):
+            data = {}
+
+        try:
+            row_id = int(data.get("id", 0))
+        except (TypeError, ValueError):
+            row_id = 0
+        if row_id <= 0:
+            self._send_json(400, {"status": "error", "message": "Missing email id"})
+            return
+
+        conn = _get_db()
+        cur = conn.cursor()
+        cur.execute("DELETE FROM outbox WHERE id = ?", (row_id,))
+        affected = cur.rowcount
+        conn.commit()
+        conn.close()
+
+        if affected == 1:
+            self._send_json(200, {"status": "success", "message": "Removed from the outbox"})
+        else:
+            self._send_json(404, {"status": "error", "message": "That email is no longer in the outbox"})
 
     # ---- waitlist (email everyone — founder only) ----------------------
     def _handle_waitlist_email(self):

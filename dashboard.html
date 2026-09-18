@@ -92,10 +92,11 @@
             <th>Subject</th>
             <th>Status</th>
             <th>When</th>
+            <th></th>
           </tr>
         </thead>
         <tbody id="outbox-rows">
-          <tr><td colspan="4" style="color: var(--color-text-muted);">Loading…</td></tr>
+          <tr><td colspan="5" style="color: var(--color-text-muted);">Loading…</td></tr>
         </tbody>
       </table>
     </div>
@@ -211,7 +212,7 @@
           var emails = data.emails || [];
           document.getElementById('email-off-banner').hidden = data.email_configured === true;
           if (emails.length === 0) {
-            tbody.innerHTML = '<tr><td colspan="4" style="color: var(--color-text-muted);">No emails generated yet.</td></tr>';
+            tbody.innerHTML = '<tr><td colspan="5" style="color: var(--color-text-muted);">No emails generated yet.</td></tr>';
             return;
           }
           tbody.innerHTML = emails.map(function(e) {
@@ -222,13 +223,47 @@
               return { "<": "&lt;", ">": "&gt;", "&": "&amp;", '"': "&quot;" }[c];
             });
             var when = e.created_at ? new Date(e.created_at).toLocaleString() : "—";
-            var status = e.status === "sent" ? "Sent ✅" : "Waiting for sender";
-            return '<tr><td>' + to + '</td><td>' + subject + '</td><td>' + status + '</td><td>' + when + '</td></tr>';
+            var status = e.status === "sent" ? "Sent" : "Waiting for sender";
+            return '<tr><td>' + to + '</td><td>' + subject + '</td><td>' + status + '</td><td>' + when + '</td>' +
+              '<td><button class="btn btn-delete" onclick="deleteOutbox(' + Number(e.id) + ')">Delete</button></td></tr>';
           }).join("");
         })
         .catch(function(err) {
           if (err.message !== "redirecting to sign in") console.error("outbox error:", err);
         });
+    }
+
+    function deleteOutbox(id) {
+      if (!confirm("Remove this email from the outbox?")) return;
+
+      var statusEl = document.getElementById('status-msg');
+      statusEl.textContent = "Deleting…";
+
+      fetch("/api/outbox/delete", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ id: id })
+      })
+      .then(function(resp) {
+        if (resp.status === 401) {
+          window.location.href = "/signin";
+          throw new Error("redirecting to sign in");
+        }
+        return resp.json().then(function(data) {
+          if (!resp.ok) throw new Error(data.message || "Server error");
+          return data;
+        });
+      })
+      .then(function(data) {
+        statusEl.textContent = data.message;
+        refreshOutbox();
+      })
+      .catch(function(err) {
+        if (err.message !== "redirecting to sign in") {
+          statusEl.textContent = err.message || "Something went wrong.";
+          console.error("outbox delete error:", err);
+        }
+      });
     }
 
     function sendUpdateEmail() {
