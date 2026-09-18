@@ -193,6 +193,8 @@ Welcome to your Founder Notebook. This is the single source of truth for your st
 | 2026-09-18 | Full 13-section page | 8-part vs recommended 13-section set | Rebuilt index.html around the full 13-section set (cross-source, privacy, before-vs-lucid, founder note, FAQ added); all 50 tests pass | Done |
 | 2026-09-18 | Founder dashboard | No dashboard vs private watch area | Added /dashboard (login-protected) listing waitlist signups (name/email/date) with refresh, email-everyone button, and sign out; sessions stored in SQLite with HttpOnly cookie | Done |
 | 2026-09-18 | Join notifications | No email vs notify founder on each join | Added SMTP notifications (email_config.py) — founder gets an email with the joiner's name/email on every new signup; gracefully skipped until credentials are set | Done |
+| 2026-09-18 | Account creation | First sign-in auto-creates vs explicit sign-up page | Added dedicated /signup page + /api/signup endpoint (name, email, password) with duplicate-account guard; sign-in still auto-creates the founder account when the table is empty | Done |
+| 2026-09-18 | Hero + section visuals | Plain mockups vs professional SVG images | Added assets/hero-app.svg (browser mockup), assets/sources.svg (cross-source diagram), assets/privacy.svg (shield) — inspired by the "Copywriter" WebWave template style, in the light-blue theme; external files keep no-hex rule in HTML | Done |
 
 ---
 
