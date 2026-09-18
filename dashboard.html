@@ -30,6 +30,15 @@
     <!-- error / loading message -->
     <p id="status-msg" style="color: var(--color-primary); font-weight: 500; min-height: 1.5em;"></p>
 
+    <!-- shown only when no real email sender is configured -->
+    <div id="email-off-banner" hidden style="background: #FFF7ED; border: 1px solid #FED7AA; border-left: 4px solid #F97316; border-radius: var(--radius-md); padding: var(--space-4) var(--space-5); margin-bottom: var(--space-5); display: flex; flex-wrap: wrap; align-items: center; gap: var(--space-3);">
+      <div style="flex: 1; min-width: 16rem;">
+        <strong style="color: var(--color-secondary);">Email sending is OFF right now.</strong>
+        <span style="color: var(--color-secondary);"> Every email is still generated and saved below in the Outbox — but to deliver them to real inboxes, one Gmail app password is needed.</span>
+      </div>
+      <a class="btn btn-delete" style="border-color: #F97316; color: #C2410C;" href="/email-help">How to set it up (2 min)</a>
+    </div>
+
     <!-- table of signups -->
     <div style="background: var(--color-surface); border: 1px solid var(--color-border); border-radius: var(--radius-lg); padding: var(--space-5); box-shadow: var(--shadow-sm); overflow-x: auto;">
       <table class="watch-table">
@@ -200,6 +209,7 @@
         .then(function(data) {
           var tbody = document.getElementById('outbox-rows');
           var emails = data.emails || [];
+          document.getElementById('email-off-banner').hidden = data.email_configured === true;
           if (emails.length === 0) {
             tbody.innerHTML = '<tr><td colspan="4" style="color: var(--color-text-muted);">No emails generated yet.</td></tr>';
             return;

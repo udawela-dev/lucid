@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Lucid — How to turn on email</title>
+  <meta name="description" content="Two-minute guide to turning on real email sending for Lucid." />
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+
+  <header class="navbar" id="navbar">
+    <a href="/" class="navbar-brand" aria-label="Lucid home">
+      <span>Lucid</span>
+    </a>
+    <nav class="navbar-links" aria-label="Main navigation">
+      <a href="/">Home</a>
+      <a href="/dashboard">Watch area</a>
+    </nav>
+  </header>
+
+  <main style="max-width: 46rem; margin: 4rem auto; padding: 0 1rem;">
+
+    <h1 style="font-size: clamp(2rem, 5vw, 2.5rem); margin-bottom: 0.5rem;">How to turn on email</h1>
+    <p style="color: var(--color-text-muted); margin-bottom: var(--space-6);">
+      Lucid is fully ready to send emails. It just needs one "mail box key" from you —
+      a Gmail app password. It takes about 2 minutes, once.
+    </p>
+
+    <div style="background: var(--color-surface); border: 1px solid var(--color-border); border-radius: var(--radius-lg); padding: var(--space-5); box-shadow: var(--shadow-sm); margin-bottom: var(--space-5);">
+      <h2 style="font-family: var(--font-heading); font-size: 1.25rem; margin-bottom: var(--space-4);">Step 1 — Create a Gmail for Lucid (if you don't have one)</h2>
+      <p style="color: var(--color-secondary); line-height: 1.6;">
+        Any Gmail works. You can use your own, or make a brand-new free one so Lucid
+        doesn't use your personal inbox:
+      </p>
+      <p style="margin: var(--space-3) 0;"><a class="btn btn-primary" href="https://accounts.google.com/signup" target="_blank" rel="noopener">Create a Gmail</a></p>
+    </div>
+
+    <div style="background: var(--color-surface); border: 1px solid var(--color-border); border-radius: var(--radius-lg); padding: var(--space-5); box-shadow: var(--shadow-sm); margin-bottom: var(--space-5);">
+      <h2 style="font-family: var(--font-heading); font-size: 1.25rem; margin-bottom: var(--space-4);">Step 2 — Turn on 2-Step Verification</h2>
+      <ol style="color: var(--color-secondary); line-height: 1.8; padding-left: 1.25rem;">
+        <li>Go to <strong>myaccount.google.com</strong> and sign in with that Gmail</li>
+        <li>Click <strong>Security</strong> (left menu)</li>
+        <li>Under "How you sign in with Google", click <strong>2-Step Verification</strong></li>
+        <li>Click <strong>Get started</strong> and follow the steps (phone code)</li>
+      </ol>
+      <p style="color: var(--color-text-muted); font-size: 0.9375rem; margin-top: var(--space-3);">
+        Google requires this before it hands out app passwords. You only do it once.
+      </p>
+    </div>
+
+    <div style="background: var(--color-surface); border: 1px solid var(--color-border); border-radius: var(--radius-lg); padding: var(--space-5); box-shadow: var(--shadow-sm); margin-bottom: var(--space-5);">
+      <h2 style="font-family: var(--font-heading); font-size: 1.25rem; margin-bottom: var(--space-4);">Step 3 — Create the app password</h2>
+      <ol style="color: var(--color-secondary); line-height: 1.8; padding-left: 1.25rem;">
+        <li>Back in <strong>Security</strong>, search for <strong>App passwords</strong></li>
+        <li>Select app: <strong>Mail</strong> — Select device: <strong>Other</strong>, type <strong>lucid</strong></li>
+        <li>Click <strong>Generate</strong></li>
+      </ol>
+      <p style="color: var(--color-secondary); line-height: 1.6; margin-top: var(--space-3);">
+        Google shows <strong>16 characters</strong> like:
+        <code style="display: inline-block; background: var(--color-accent); padding: 0.15rem 0.6rem; border-radius: var(--radius-sm); margin-top: 0.25rem;">abcd efgh ijkl mnop</code>
+      </p>
+    </div>
+
+    <div style="background: var(--color-surface); border: 1px solid var(--color-border); border-radius: var(--radius-lg); padding: var(--space-5); box-shadow: var(--shadow-sm); margin-bottom: var(--space-6);">
+      <h2 style="font-family: var(--font-heading); font-size: 1.25rem; margin-bottom: var(--space-4);">Step 4 — Give the key to Lucid</h2>
+      <p style="color: var(--color-secondary); line-height: 1.8;">
+        Open <strong>build-lab/email_config.py</strong> and fill in two lines:
+      </p>
+      <pre style="background: var(--color-surface); border: 1px solid var(--color-border); border-radius: var(--radius-md); padding: var(--space-4); overflow-x: auto; font-size: 0.875rem; color: var(--color-secondary);">
+SENDER_EMAIL = "yourname@gmail.com"
+SENDER_PASSWORD = "abcd efgh ijkl mnop"</pre>
+      <p style="color: var(--color-secondary); line-height: 1.8; margin-top: var(--space-3);">
+        Save the file. Then refresh the <a href="/dashboard">Watch area</a> — the banner disappears
+        and the Outbox emails change to "Sent".
+      </p>
+      <p style="color: var(--color-text-muted); font-size: 0.9375rem; margin-top: var(--space-3);">
+        This file is private to you (gitignored) — it is never uploaded to GitHub.
+      </p>
+    </div>
+
+    <p style="color: var(--color-text-muted);">
+      Still stuck? Ask your teacher or a friend for help with the Google steps —
+      everything else is already done.
+    </p>
+
+  </main>
+
+  <footer class="footer" style="margin-top:3rem;">
+    <p class="footer-copy">&copy; 2026 <strong>Lucid</strong>. All rights reserved.</p>
+  </footer>
+
+</body>
+</html>

@@ -186,6 +186,8 @@ class Handler(BaseHTTPRequestHandler):
             self._send_html("signin.html")
         elif path == "/signup":
             self._send_html("signup.html")
+        elif path == "/email-help":
+            self._send_html("email-help.html")
         elif path == "/dashboard":
             if self._get_session_email():
                 self._send_html("dashboard.html")
@@ -346,7 +348,11 @@ class Handler(BaseHTTPRequestHandler):
             {"recipient": r[0], "subject": r[1], "status": r[2], "created_at": r[3]}
             for r in rows
         ]
-        self._send_json(200, {"status": "success", "emails": emails})
+        self._send_json(200, {
+            "status": "success",
+            "emails": emails,
+            "email_configured": bool(SENDER_EMAIL and SENDER_PASSWORD),
+        })
 
     # ---- waitlist (email everyone — founder only) ----------------------
     def _handle_waitlist_email(self):
